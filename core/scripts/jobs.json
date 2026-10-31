@@ -13,5 +13,11 @@
   {"id": "hardening_audit", "argv": ["python", "scripts/hardening_audit.py"], "every_min": 10080, "timeout_s": 180, "enabled": true},
   {"id": "security_digest", "argv": ["python", "scripts/security_digest.py"], "every_min": 10080, "timeout_s": 120, "enabled": true},
   {"id": "persistence_audit", "argv": ["python", "scripts/persistence_audit.py"], "every_min": 360, "timeout_s": 180, "enabled": true},
-  {"id": "autopilot", "argv": ["python", "scripts/autopilot.py", "--detach"], "every_min": 10, "timeout_s": 120, "enabled": true}
+  {"id": "autopilot", "argv": ["python", "scripts/autopilot.py", "--detach"], "every_min": 10, "timeout_s": 120, "enabled": true},
+  {"id": "discord_daemon_health", "argv": ["python", "scripts/discord_daemon.py", "--health"], "every_min": 5, "timeout_s": 60, "enabled": false},
+  {"id": "quiet_dm", "argv": ["python", "scripts/quiet_dm.py"], "every_min": 5, "timeout_s": 60, "enabled": false},
+  {"id": "status_ping", "argv": ["python", "scripts/status_ping.py"], "every_min": 5, "timeout_s": 60, "enabled": false},
+  {"id": "game_auto", "argv": ["python", "scripts/game_auto.py"], "every_min": 5, "timeout_s": 60, "enabled": false},
+  {"id": "network_baseline_check", "argv": ["python", "scripts/network_baseline_check.py"], "every_min": 30, "timeout_s": 120, "enabled": false},
+  {"id": "repair_playbook", "argv": ["python", "scripts/repair_playbook.py"], "every_min": 15, "timeout_s": 300, "enabled": false}
 ]

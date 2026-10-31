@@ -13,7 +13,7 @@ Every tool this assistant has, from the real files in `scripts/` (written {{date
 - Tools that act on the computer (stop a program, delete old files, restore a note) are dry-run, opt-in or manual only; read the first lines of the script before enabling one.
 - Windows-only tools exit with one short line on other systems.
 
-Count of tools in this note: 136.
+Count of tools in this note: 156.
 
 ## The work loop and the safety layer (always on)
 
@@ -211,5 +211,30 @@ Count of tools in this note: 136.
 | `tool_heartbeat_hook.py` | PostToolUse hook: every tool call is proof that the live session is working, so it touches the 'claude_session' heartbeat. | PostToolUse | tool_heartbeat_off.txt | any |
 | `vault_checkpoint_hook.py` | PostToolUse hook: a short reminder to finish a notes change properly, after the assistant edits the vault or the boot file. | PostToolUse (Write|Edit|MultiEdit) | vault_checkpoint_off.txt | any |
 
+## Optional extras (shipped switched off; see Optional Extras for how to turn one on)
+
+| Tool | What it does | Runs | Switch | System |
+|---|---|---|---|---|
+| `discord_daemon.py` | Discord bridge daemon: an OPTIONAL chat channel between you and your assistant. | job every 5 min (off) | discord_daemon_off.txt | any |
+| `discord_queue_send.py` | Queue a Discord message for discord_daemon.py to send. OPTIONAL chat channel: nothing here runs until you create your own Discord bot and a config file. | on request | discord_queue_send_off.txt, discord_send_lint_off.txt | any |
+| `discord_typing.py` | Discord typing indicator keeper (part of the OPTIONAL Discord chat channel). | on request | discord_typing_off.txt | any |
+| `game_auto.py` | Automatic game mode (OPT-IN): flips the game mode switch for you so you do not have to say "I am gaming now" and "I am done". | job every 5 min (off) | game_auto_off.txt | any |
+| `game_mode.py` | Game mode: one reversible do-not-disturb switch for when the user is in a full-screen game. | on request | - | any |
+| `game_mode_guard_hook.py` | PreToolUse hook: while GAME MODE is on, refuse tool calls that would open or focus a window. | on request | game_mode_guard_hook_off.txt | any |
+| `gmail_api.py` | Read-only Gmail access through the real Gmail API (no browser scraping). | on request | - | any |
+| `kill_switch.py` | Emergency stop: a MANUAL tool for "something looks wrong right now, stop everything while I find out what happened". | on request | autopilot_off.txt, job_runner_off.txt | any |
+| `network_baseline_check.py` | Network baseline check: a cheap tripwire for beaconing and data exfiltration. | job every 30 min (off) | network_baseline_check_off.txt | any |
+| `queue_check.py` | Queue check: print the new lines of an incoming-message log (default logs/discord_incoming.jsonl, written by discord_daemon.py), once each, by byte cursor. | on request | - | any |
+| `quiet_dm.py` | Quiet hours for unprompted, non-urgent messages: held while the owner is asleep, delivered as ONE message afterwards, never lost. | job every 5 min (off) | quiet_dm_off.txt | any |
+| `repair_playbook.py` | Repair playbook: known failures get fixed by a tested, safe action instead of waiting for a person to notice. | job every 15 min (off) | repair_playbook_off.txt | any |
+| `sense_asks.py` | Ask sensor (OPTIONAL, off until you give it your message log): nothing the user asks falls through. | on request | sense_asks_off.txt | any |
+| `sense_life.py` | Life sensor (OPTIONAL, off until you point it at a calendar): turns what is coming up in the user's calendar into work items with a sensible lead time, so the assistant acts without being told. | on request | sense_life_off.txt | any |
+| `sense_mail.py` | Mail sensor (OPTIONAL, off until you connect Gmail): raises one work item per unread message that LOOKS like it needs an answer, never a bare count. | on request | sense_mail_off.txt | any |
+| `status_ping.py` | Status ping: after a long silence, one short "still working" line, so the user is never left wondering. | job every 5 min (off) | status_ping_off.txt | any |
+| `voice_hook.py` | Voice card hook (UserPromptSubmit): keeps the assistant's chat messages sounding like a person texting a friend, in the owner's own register. | on request | voice_hook_off.txt | any |
+| `voice_stats.py` | Voice drift meter: measures how your assistant's chat messages sound next to your own, so "it keeps changing how it talks" becomes a number instead of a feeling. | on request | - | any |
+| `wake_filter.py` | Wake filter: keeps repeated and noisy lines from waking the session, and never hides anything. | on request | wake_filter_off.txt | any |
+| `watcher.py` | Watcher: prints one line per NEW event from a configurable list of sources, so a Claude Code Monitor can wake the session. | on request | watcher_off.txt | any |
+
 ## Not included on purpose
-- Free helper models / gateways (see `Free Helper Models (optional).md`), a chat bot for Discord or Telegram, mail and calendar readers, and anything that needs an account of {{name}}'s: they are set up by {{name}} later, one at a time.
+- Free helper models / gateways (see `Free Helper Models (optional).md`), a Telegram bot, and anything that needs an account of {{name}}'s: they are set up by {{name}} later, one at a time. The Discord chat channel, the mail and calendar readers, game mode and a few more are in the *Optional extras* section above, shipped switched off (see `Optional Extras.md`).

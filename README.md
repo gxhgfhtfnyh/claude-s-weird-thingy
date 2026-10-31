@@ -8,7 +8,7 @@ A plug-and-play start for your own assistant, built from a personal setup that r
 - **Skills and agents** (`.claude/`): how to run the loop, verify before claiming, handle outside content safely, keep the vault clean, improve the harness like a lab; a claim auditor and a research agent.
 - **A parity test** (`python scripts/parity_test.py`): seven checks, each on its own fresh copy of your folder, that prove the loop, the memory and the safety hold actually work.
 - **Quiet safety watchers** (no AI involved, run by the job runner): a file integrity check on the boot file, hooks and gate scripts; a secret scan; a ransomware canary; an audit of what starts by itself on the computer; a check of running programs; a vault consistency check; and an autopilot that ships switched off.
-- **A toolbox the assistant knows how to use** (`vault/05 - Resources/Toolbox.md`, 136 scripts with tests): more security watchers (new programs, network and listening ports, trusted-binary hashes, Defender exclusions, clipboard secrets, commit-time secret scan), vault cleaners (stale and duplicate notes, link suggestions, daily-note and priorities helpers), backups with a test-restore, usage and transcript reports, goal and outcome tracking, desktop helpers (Windows) and more. Each says what it does, how to run it, and its off switch; the ones that act on the computer are dry-run, opt-in or manual only. Not included: chat bots (Discord, Telegram), mail and calendar readers and free-model gateways, which need your own accounts.
+- **A toolbox the assistant knows how to use** (`vault/05 - Resources/Toolbox.md`, 156 scripts with tests): more security watchers (new programs, network and listening ports, trusted-binary hashes, Defender exclusions, clipboard secrets, commit-time secret scan), vault cleaners (stale and duplicate notes, link suggestions, daily-note and priorities helpers), backups with a test-restore, usage and transcript reports, goal and outcome tracking, desktop helpers (Windows) and more. Each says what it does, how to run it, and its off switch; the ones that act on the computer are dry-run, opt-in or manual only. Not included: chat bots (Discord, Telegram), mail and calendar readers and free-model gateways, which need your own accounts.
 - **A finished setup, not a to-do list** (`finish_setup.py`): Obsidian installed and pointed at your vault (daily notes already configured), the scheduler registered and checked, the folder trusted, the assistant launched.
 
 ## Get it with your own Claude Code
@@ -59,9 +59,17 @@ Then start a new Claude Code session in the assistant folder so it picks up the 
 ## How it works day to day
 Sensors and jobs run every 5 minutes with no AI. They write facts and work items into `logs/`. Every Claude session starts with the index and the next work item; the stop hook keeps a turn open while important work waits. Nothing that another person would see or receive is sent until you type the approval yourself. Every automatic behaviour has an off switch (a file in `logs/`), and the health check tells you when something is off.
 
+## Optional extras (shipped, but off)
+Things a real setup used that you may or may not want. None is wired in by default; nothing starts, connects or sends until you set it up. The vault note `Optional Extras` (also in the Toolbox) says what each does and the one step to enable it.
+- **Discord chat channel:** a daemon, a send script with a send gate and a lint, a typing indicator, a queue watcher, quiet hours for unprompted messages, and a voice hook that keeps messages in your own register. Needs your own Discord bot and token (kept in the OS keyring, never in a file).
+- **Waking and quiet:** a watcher and a wake filter, a "still working" ping, a repair playbook for known failures.
+- **Mail and calendar, read-only:** Gmail through the real API with the read-only permission, and sensors that turn mail that needs an answer and upcoming events into work items. Needs your own accounts.
+- **Safety and quiet time:** an emergency kill switch, a network baseline tripwire, game mode with a hook and an automatic switch.
+The scripts have tests that use fakes; the Discord, mail and calendar tools were never run against a real service in this kit, so try each with a harmless first use.
+
 ## Not included, on purpose
 - **Free helper models (OmniRoute and similar).** You set those up yourself; the vault note `Free Helper Models (optional)` explains what they are, the rules that kept them safe, and what to expect.
-- **A chat channel (Discord, Telegram).** The approval gate and the work loop work without it. Adding one is a later, separate step.
+- **A chat channel switched on.** The approval gate and the work loop work without one. The Discord channel (daemon, send script with its lint, typing, queue watcher, quiet hours, voice hook), read-only mail and calendar tools, game mode and a few more ship as *optional extras*: the scripts and tests are in `core/scripts`, but no hook is wired and every timed job is disabled until you choose to enable it (see below).
 - **Anything personal about the person who made this kit.** A leak scan is part of the kit and part of the parity test.
 - **A tuned memory.** The assistant starts with an empty memory plus the Lessons Pack and earns the rest from your corrections. It will not be as good as a setup that has run for weeks until it has learned from you.
 

@@ -36,7 +36,7 @@ Tools you can run by hand: `script_doctor.py check <file.py>` (syntax errors, wr
 
 ## Things you can add later (ask {{assistant_name}} to walk you through each, one at a time)
 - **More sensors:** the deadline sensor reads `Deadlines.md`; to watch {{watch}} or anything else, write a small script that adds work items through `intent_store.py` and add a row to `scripts/jobs.json`. Every script gets tests.
-- **A private chat channel** (Discord DM, Telegram) so you can talk to it from your phone. Not included in this kit.
+- **A private chat channel** so you can talk to it from your phone. A Discord channel (plus read-only mail and calendar tools and game mode) ships as an optional extra, switched off until {{name}} sets it up; see `Optional Extras.md`. Telegram is not included.
 - **Free helper models** through a local gateway for routine jobs. Not included; see `Free Helper Models (optional).md`.
 
 ## How to look at the loop

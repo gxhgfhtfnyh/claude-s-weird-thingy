@@ -44,6 +44,8 @@ NOTES = [   # vault notes the kit ships that an older assistant lacks: (title, t
      "  - [[Experience Notes]]: how connections, scripts and protocols work, and the experience behind them (read once, then use as a reference)."),
     ("Field Guide", "templates/vault/05 - Resources/Field Guide.md.tpl", "vault/05 - Resources/Field Guide.md",
      "  - [[Field Guide]]: the mistakes, fixes, playbooks and numbers learned in real use (read when something goes wrong or before changing a rule)."),
+    ("Optional Extras", "templates/vault/05 - Resources/Optional Extras.md.tpl", "vault/05 - Resources/Optional Extras.md",
+     "  - [[Optional Extras]]: tools that ship switched off (Discord chat channel, voice hook, mail and calendar readers, game mode, repair playbook) and how to turn one on."),
 ]
 
 
