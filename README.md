@@ -42,6 +42,13 @@ macOS / Linux: install Claude Code with `curl -fsSL https://claude.ai/install.sh
 
 It checks that Python and Claude Code are there, marks this kit folder as trusted so the first start does not ask, then starts Claude with "set me up". Answer the questions one at a time (say `ok` to accept a suggestion, `skip` to skip). At the end you give **one yes**, and then there is nothing else for you to do: it builds your folder (in your home folder), installs pytest and Obsidian if they are missing and puts your notes folder into Obsidian, registers one quiet background task (every 5 minutes) and checks that it really ran, marks the folder as trusted for Claude Code, runs the seven self-checks (the parity test), opens your notes in Obsidian and starts your new assistant in a new window. If something cannot be done automatically on your computer it tells you exactly what, once. A report of the run is kept in `logs/finish_setup.txt` in your new folder, and running `finish_setup.py` again skips steps that already finished.
 
+## Updating an assistant you already built
+The kit keeps getting new tools and hooks. To bring your assistant up to date without redoing the setup (your notes, your boot file and your own edits stay as they are):
+1. In this kit folder: `git pull`
+2. See what would change: `python update_assistant.py "<your assistant folder>"` (nothing is changed yet)
+3. Do it: `python update_assistant.py "<your assistant folder>" --apply`. An assistant built before this command existed has no record of which scripts you edited, so add `--force-core` to replace the older scripts (each replaced file is copied to `logs/update/<time>/backup/` first).
+Then start a new Claude Code session in the assistant folder so it picks up the new hooks. What it did is in `logs/update_report.txt`.
+
 ## What it changes outside the new folder (and how to undo it)
 - One scheduled task or timer that runs `scripts/job_runner.py --once` every 5 minutes: `python scripts/install_scheduler.py --remove`.
 - Windows only: one small file, `usercustomize.py`, in your Python user folder, so background jobs do not flash console windows: `python scripts/headless_subprocess.py --uninstall` (a file that was there before is restored).

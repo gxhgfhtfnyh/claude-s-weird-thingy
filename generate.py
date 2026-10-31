@@ -173,7 +173,27 @@ def generate(kit_dir: str | Path, answers: dict, out_dir: str | Path, force: boo
         off.parent.mkdir(parents=True, exist_ok=True)
         off.write_text("The autopilot is OFF. Delete this file to let the assistant keep working through its work list while its owner is away.\n", encoding="utf-8")
         report["created"].append("logs/autopilot_off.txt")
+    _write_manifest(kit / "core", out)
     return report
+
+
+def _write_manifest(core: Path, out: Path) -> None:
+    """logs/kit_manifest.json: the sha256 of each core file exactly as the kit wrote it, so update_assistant.py can tell a file the owner never edited (safe to update)
+    from one they changed. A file that was already there and differs from the kit's is not recorded: it counts as edited."""
+    import hashlib
+    files = {}
+    for src in (sorted(core.rglob("*")) if core.exists() else []):
+        if src.is_dir() or SKIP_CORE_PARTS & set(src.relative_to(core).parts) or src.suffix == ".pyc":
+            continue
+        rel = src.relative_to(core).as_posix()
+        if rel.endswith(".tpl") or rel == "scripts/jobs.json":
+            continue
+        target = out / rel
+        if target.is_file() and target.read_bytes() == src.read_bytes():
+            files[rel] = hashlib.sha256(src.read_bytes()).hexdigest()
+    mf = out / "logs" / "kit_manifest.json"
+    mf.parent.mkdir(parents=True, exist_ok=True)
+    mf.write_text(json.dumps({"built": date.today().isoformat(), "files": files}, indent=1), encoding="utf-8")
 
 
 SKIP_CORE_PARTS = {"__pycache__", ".pytest_cache", "logs", ".git"}      # logs: a stray run of a script inside core/ must never ship its state to someone else
