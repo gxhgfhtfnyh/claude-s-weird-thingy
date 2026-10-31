@@ -179,6 +179,28 @@ def test_a_missing_toolbox_note_is_added_and_linked_once(new_kit, assistant):
     assert idx.read_text(encoding="utf-8").count("[[Toolbox]]") == 1
 
 
+def test_a_missing_experience_note_is_added_and_linked_once(new_kit, assistant):
+    note = assistant / "vault" / "05 - Resources" / "Experience Notes.md"
+    idx = assistant / "vault" / "VAULT-INDEX.md"
+    note.unlink()
+    idx.write_text(idx.read_text(encoding="utf-8").replace("[[Experience Notes]]", "Experience Notes"), encoding="utf-8")
+    run(new_kit, assistant, "--apply")
+    assert note.is_file() and "Scripts beat live tool connections" in note.read_text(encoding="utf-8")
+    assert idx.read_text(encoding="utf-8").count("[[Experience Notes]]") == 1
+    run(new_kit, assistant, "--apply")
+    assert idx.read_text(encoding="utf-8").count("[[Experience Notes]]") == 1
+
+
+def test_a_missing_field_guide_is_added_and_linked_once(new_kit, assistant):
+    note = assistant / "vault" / "05 - Resources" / "Field Guide.md"
+    idx = assistant / "vault" / "VAULT-INDEX.md"
+    note.unlink()
+    idx.write_text(idx.read_text(encoding="utf-8").replace("[[Field Guide]]", "Field Guide"), encoding="utf-8")
+    run(new_kit, assistant, "--apply")
+    assert note.is_file() and "Field Guide" in note.read_text(encoding="utf-8")
+    assert idx.read_text(encoding="utf-8").count("[[Field Guide]]") == 1
+
+
 def test_a_missing_focus_file_is_added_and_an_existing_one_is_left_alone(new_kit, assistant):
     focus = assistant / "logs" / "focus.md"
     focus.unlink()

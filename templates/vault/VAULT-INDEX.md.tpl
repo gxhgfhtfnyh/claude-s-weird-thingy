@@ -19,6 +19,8 @@ Last updated: {{date}} (created by the setup interview).
   - [[Lessons Pack]]: 51 lessons learned the hard way; add your own at the bottom.
   - [[Autonomy Tiers]]: what is done quietly, done then told, asked first, or never.
   - [[Toolbox]]: every tool, hook and watcher this assistant has, what it does, how to run it and its off switch (read it before saying you cannot do something).
+  - [[Experience Notes]]: how connections, scripts and protocols work, and the experience behind them (read once, then use as a reference).
+  - [[Field Guide]]: the mistakes, fixes, playbooks and numbers learned in real use (read when something goes wrong or before changing a rule).
   - [[Deadlines]]: the list the deadline sensor reads.
   - [[Recall Probes]]: the questions the memory is tested with (`python scripts/recall_eval.py`).
   - [[Free Helper Models (optional)]]: what free helper models are and how to set them up yourself.

@@ -13,7 +13,7 @@ What it does, and what it never does:
   - scripts/jobs.json: jobs the kit has and you lack are added (with the kit's own on/off setting); your jobs and your switches stay as they are.
   - .claude/settings.json: hooks the kit has and you lack are added; your own hooks and settings stay as they are.
   - logs/focus.md (the starter file the new hooks read) is written when missing.
-  - the vault: a missing Toolbox note is written, and a [[Toolbox]] line is added to VAULT-INDEX.md when it has none. Nothing else in the vault is touched.
+  - the vault: a missing Toolbox note and Experience Notes note are written, and a line for each is added to VAULT-INDEX.md when it has none. Nothing else in the vault is touched.
   - never touched: CLAUDE.md, anything else in vault/, your logs (except the update report, backups and the manifest).
   - afterwards it accepts the new state with `integrity_check.py --rebaseline` (the integrity watcher would otherwise report the updated hooks as changed behind your
     back; use --no-rebaseline to skip that), and writes logs/update_report.txt.
@@ -37,8 +37,14 @@ import generate as G  # noqa: E402
 
 MANIFEST = "logs/kit_manifest.json"
 SPECIAL = {".claude/settings.json", "scripts/jobs.json"}          # merged, never copied over
-TOOLBOX_TPL = "templates/vault/05 - Resources/Toolbox.md.tpl"
-TOOLBOX_NOTE = "vault/05 - Resources/Toolbox.md"
+NOTES = [   # vault notes the kit ships that an older assistant lacks: (title, template in the kit, path in the assistant, line for the vault index)
+    ("Toolbox", "templates/vault/05 - Resources/Toolbox.md.tpl", "vault/05 - Resources/Toolbox.md",
+     "  - [[Toolbox]]: every tool, hook and watcher this assistant has, what it does, how to run it and its off switch."),
+    ("Experience Notes", "templates/vault/05 - Resources/Experience Notes.md.tpl", "vault/05 - Resources/Experience Notes.md",
+     "  - [[Experience Notes]]: how connections, scripts and protocols work, and the experience behind them (read once, then use as a reference)."),
+    ("Field Guide", "templates/vault/05 - Resources/Field Guide.md.tpl", "vault/05 - Resources/Field Guide.md",
+     "  - [[Field Guide]]: the mistakes, fixes, playbooks and numbers learned in real use (read when something goes wrong or before changing a rule)."),
+]
 
 
 def sha(data):
@@ -132,7 +138,7 @@ def check_folders(kit, assistant):
 
 
 def plan(kit, assistant, force_core=False):
-    """-> {"add": [...], "update": [...], "same": [...], "conflict": [...], "jobs": [...], "hooks": [...], "toolbox": bool, "index": bool, "manifest_known": bool}. Writes nothing."""
+    """-> {"add": [...], "update": [...], "same": [...], "conflict": [...], "jobs": [...], "hooks": [...], "notes": [...], "extra": [...], "index": [...], "manifest_known": bool}. Writes nothing."""
     kit, assistant = Path(kit), Path(assistant)
     manifest = load_json(assistant / MANIFEST, {})
     known = manifest.get("files") if isinstance(manifest, dict) and isinstance(manifest.get("files"), dict) else {}
@@ -157,7 +163,7 @@ def plan(kit, assistant, force_core=False):
         p["hooks"] = merge_settings(p["settings_kit"], load_json(assistant / ".claude/settings.json", {}))[1]
     else:
         p["settings_kit"], p["hooks"] = {}, []
-    p["toolbox"] = (kit / TOOLBOX_TPL).is_file() and not (assistant / TOOLBOX_NOTE).exists()
+    p["notes"] = [n for n in NOTES if (kit / n[1]).is_file() and not (assistant / n[2]).exists()]
     p["extra"] = []                                  # starter files the new hooks read (logs/focus.md); the autopilot switch is never added here
     tl = kit / "templates" / "logs"
     for f in (sorted(tl.glob("*.tpl")) if tl.is_dir() else []):
@@ -165,7 +171,8 @@ def plan(kit, assistant, force_core=False):
         if rel != "logs/autopilot_off.txt" and not (assistant / rel).exists():
             p["extra"].append(rel)
     idx = assistant / "vault/VAULT-INDEX.md"
-    p["index"] = idx.is_file() and "[[Toolbox]]" not in idx.read_text(encoding="utf-8", errors="replace") and ((assistant / TOOLBOX_NOTE).exists() or p["toolbox"])
+    idx_text = idx.read_text(encoding="utf-8", errors="replace") if idx.is_file() else None
+    p["index"] = [n for n in NOTES if idx_text is not None and "[[%s]]" % n[0] not in idx_text and ((assistant / n[2]).exists() or n in p["notes"])]
     return p
 
 
@@ -207,17 +214,17 @@ def apply(kit, assistant, p, rebaseline=True, now=None):
     for rel in p["extra"]:
         tpl = kit / "templates" / "logs" / (Path(rel).name + ".tpl")
         _write(assistant / rel, G.render(tpl.read_text(encoding="utf-8"), {"name": "the user", "assistant_name": "the assistant", "date": date.today().isoformat(), **G.python_values()}).encode("utf-8"))
-    if p["toolbox"]:
-        text = G.render((kit / TOOLBOX_TPL).read_text(encoding="utf-8"), {"name": "the user", "assistant_name": "the assistant", "date": date.today().isoformat(), **G.python_values()})
-        _write(assistant / TOOLBOX_NOTE, text.encode("utf-8"))
+    for _title, tpl_rel, note_rel, _line in p["notes"]:
+        text = G.render((kit / tpl_rel).read_text(encoding="utf-8"), {"name": "the user", "assistant_name": "the assistant", "date": date.today().isoformat(), **G.python_values()})
+        _write(assistant / note_rel, text.encode("utf-8"))
     if p["index"]:
         idx = assistant / "vault/VAULT-INDEX.md"
         _write(udir / "backup/vault/VAULT-INDEX.md", idx.read_bytes())
         t = idx.read_text(encoding="utf-8", errors="replace")
         nl = "\r\n" if "\r\n" in t else "\n"
-        line = "  - [[Toolbox]]: every tool, hook and watcher this assistant has, what it does, how to run it and its off switch."
-        m = re.search(r"^.*\[\[Autonomy Tiers\]\].*$", t, re.M)
-        t = (t[:m.end()] + nl + line + t[m.end():]) if m else (t.rstrip() + nl + line + nl)
+        for _title, _tpl, _note, line in p["index"]:
+            m = re.search(r"^.*\[\[Autonomy Tiers\]\].*$", t, re.M)
+            t = (t[:m.end()] + nl + line + t[m.end():]) if m else (t.rstrip() + nl + line + nl)
         _write(idx, t.encode("utf-8"))
     # manifest: every file that now equals the kit's version is known as unedited
     man = load_json(assistant / MANIFEST, {})
@@ -249,10 +256,10 @@ def describe(p):
         out.append("  %-26s hook %s%s -> %s" % ("ADD", ev, " (%s)" % m if m else "", s))
     for rel in p["extra"]:
         out.append("  %-26s %s (the starter file the new hooks read)" % ("ADD", rel))
-    if p["toolbox"]:
-        out.append("  %-26s %s" % ("ADD", TOOLBOX_NOTE))
-    if p["index"]:
-        out.append("  %-26s a [[Toolbox]] line in vault/VAULT-INDEX.md" % "ADD")
+    for _title, _tpl, note_rel, _line in p["notes"]:
+        out.append("  %-26s %s" % ("ADD", note_rel))
+    for title, _tpl, _note, _line in p["index"]:
+        out.append("  %-26s a [[%s]] line in vault/VAULT-INDEX.md" % ("ADD", title))
     out.append("  %d file(s) already current" % len(p["same"]))
     if not p["manifest_known"] and p["conflict"]:
         out.append("  note: this assistant has no logs/kit_manifest.json (built before updates existed), so every differing file counts as edited; --force-core replaces them with a backup")
@@ -278,7 +285,7 @@ def main(argv=None):
         return 1
     print("Update plan for %s from kit %s:" % (Path(a.assistant).resolve(), Path(a.kit).resolve()))
     print("\n".join(describe(p)))
-    changes = len(p["add"]) + len(p["update"]) + len(p["conflict"]) + len(p["jobs"]) + len(p["hooks"]) + int(p["toolbox"]) + int(p["index"]) + len(p["extra"])
+    changes = len(p["add"]) + len(p["update"]) + len(p["conflict"]) + len(p["jobs"]) + len(p["hooks"]) + len(p["notes"]) + len(p["index"]) + len(p["extra"])
     if not a.apply:
         print("Dry run: nothing changed. Add --apply to do it.")
         return 0

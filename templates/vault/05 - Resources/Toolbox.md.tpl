@@ -4,7 +4,7 @@ type: reference
 ---
 # Toolbox
 
-Every tool this assistant has, from the real files in `scripts/` (written {{date}}; a tool you add later is found with `python scripts/script_index.py`, which reads the scripts' own first lines). Before saying you cannot do something, look here and in `scripts/script_index.py`: a tool for it may exist. Before building a new one, search this note (`python scripts/memory_search.py "<what you need>"`).
+Every tool this assistant has, from the real files in `scripts/` (written {{date}}; a tool you add later is found with `python scripts/script_index.py`, which reads the scripts' own first lines). How connections, scripts and protocols work (and why scripts beat live tool servers for repeated work) is in [[Experience Notes]]; the mistakes and fixes learned in real use are in [[Field Guide]]. Before saying you cannot do something, look here and in `scripts/script_index.py`: a tool for it may exist. Before building a new one, search this note (`python scripts/memory_search.py "<what you need>"`).
 
 ## How to use a tool
 - Run it from the assistant folder: `python scripts/<name>.py` (`--help` or `--dry-run` first when it has them; a tool that changes things says so in its first lines).
