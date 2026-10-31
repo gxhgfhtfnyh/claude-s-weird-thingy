@@ -24,6 +24,17 @@ Without a Claude to ask, the same thing by hand (Windows PowerShell): `git clone
 - [Claude Code](https://claude.com/claude-code), signed in once, and a Claude plan (Claude Code is included in Claude Pro; check the price page) or API credit.
 - Python 3.10 or newer. On Windows, `start.cmd` offers to install it for you with winget; pytest and Obsidian are installed by the setup.
 
+## From a bare PC (nothing installed yet)
+Windows, in PowerShell (no Administrator needed):
+1. Install Claude Code: `irm https://claude.ai/install.ps1 | iex`. It shows no progress; wait until the prompt comes back.
+2. Close PowerShell, open a new one and run `claude --version` to check it worked.
+3. Install Git: `winget install Git.Git`, then close and reopen PowerShell so it is found.
+4. Run `claude` once and sign in in the browser that opens (a paid Claude plan or an API console account; the free plan does not include Claude Code). Type `/exit` when it says hi.
+5. Get this kit into your home folder as `assistant-kit`: `git clone <repository address> "$HOME\assistant-kit"` (or unzip the zip you were given there).
+6. `cd "$HOME\assistant-kit"` and run `.\start.cmd`. If Python is missing it offers to install it: say yes. Then the questions, one yes, about 10 minutes.
+
+macOS / Linux: install Claude Code with `curl -fsSL https://claude.ai/install.sh | bash`, sign in with `claude` once, then `cd` into this folder and run `sh start.sh`. (Install commands are from Anthropic's setup page: https://code.claude.com/docs/en/setup.)
+
 ## Start (one command)
 - **Windows:** open this folder and double-click `start.cmd`, or in a terminal opened here run `.\start.cmd` (PowerShell) or `start.cmd` (Command Prompt).
 - **macOS / Linux:** run `sh start.sh` in a terminal opened here.
