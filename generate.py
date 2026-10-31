@@ -254,7 +254,7 @@ def verify(out_dir: str | Path, answers: dict | None = None) -> tuple[bool, list
                     walk(v)
 
         walk(data)
-        fact(len(cmds) >= 3, "%d hook commands wired (session start, send gate, stop gate)" % len(cmds))
+        fact(len(cmds) >= 3, "%d hook commands wired (session start, per-message context and recall, send gate, web-content warning, stop hooks)" % len(cmds))
         exes = {re.match(r'\s*"?([^"]+?)"?\s+"', c).group(1) for c in cmds if re.match(r'\s*"?([^"]+?)"?\s+"', c)}
         missing = sorted(e for e in exes if not (os.path.isfile(e) or shutil.which(e)))
         fact(not missing, "hooks start with %s" % ", ".join(sorted(exes)) if not missing else "the hooks name a program that does not exist: " + ", ".join(missing))

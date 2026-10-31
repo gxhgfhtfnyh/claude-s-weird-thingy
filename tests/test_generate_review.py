@@ -41,8 +41,10 @@ def test_the_hooks_start_with_the_full_path_of_the_python_that_built_the_folder(
     data = json.loads((built / ".claude" / "settings.json").read_text(encoding="utf-8"))
     cmds = [h["command"] for entries in data["hooks"].values() for e in entries for h in e["hooks"]]
     exe = sys.executable.replace("\\", "/")
-    assert len(cmds) == 3
-    for cmd, name in zip(cmds, ("session_start.py", "send_gate.py", "stop_gate.py")):
+    names = ("session_start.py", "prompt_context_hook.py", "recall_hook.py", "send_gate.py", "injection_prescan_hook.py",
+             "stop_gate.py", "keep_going.py", "claim_gate.py", "handoff_write.py")
+    assert len(cmds) == len(names)
+    for cmd, name in zip(cmds, names):
         assert cmd == '"%s" "%s/scripts/%s"' % (exe, built.resolve().as_posix(), name)
 
 
@@ -74,7 +76,7 @@ def test_a_good_folder_verifies_and_says_what_it_checked(fresh):
     assert ok, lines
     text = "\n".join(lines)
     assert "the boot file names you (Ann Lee)" in text and "the boot file names the assistant (Penny)" in text and "no unfilled {{placeholder}} anywhere" in text
-    assert "scripts, each with a test file" in text and "3 hook commands wired" in text and not any(l.startswith("FAILED") for l in lines)
+    assert "scripts, each with a test file" in text and "9 hook commands wired" in text and not any(l.startswith("FAILED") for l in lines)
 
 
 def test_a_missing_boot_file_fails(fresh):
