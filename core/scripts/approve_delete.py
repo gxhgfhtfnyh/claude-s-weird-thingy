@@ -32,7 +32,11 @@ def find_pending(code, now=None):
         return None, "no held delete matches %s (codes last 24 hours; run the command again to get a fresh denial)" % code
     if len(shas) > 1:
         return None, "%s matches more than one held delete; use more characters of the code" % code
-    return rows[-1], ""
+    row = rows[-1]
+    if dg.sha256(row.get("text", "")) != row.get("sha"):
+        # The stored text no longer matches its own hash (a corrupted or tampered row): never approve against it.
+        return None, "that pending record is inconsistent (its stored text does not match its own hash); refusing -- approve with --text instead"
+    return row, ""
 
 
 def main(argv=None):

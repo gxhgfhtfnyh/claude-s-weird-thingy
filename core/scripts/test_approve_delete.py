@@ -62,6 +62,27 @@ def test_a_one_character_code_cannot_approve_anything(logs, capsys):
     assert not (logs / "delete_approvals.jsonl").exists()
 
 
+def test_a_command_too_long_to_show_in_full_gets_no_short_code_and_must_use_text(logs, capsys):
+    long_cmd = "rm -rf " + "/x" * 2000      # far past SHOW_LIMIT
+    verdict, reason = dg.decide("Bash", {"command": long_cmd})
+    assert verdict == "deny"
+    assert "too long to hold for a short-code approval" in reason
+    assert "approve_delete.py --text" in reason
+    assert not (logs / "delete_pending_approvals.jsonl").exists()     # no sha was ever offered as a code
+    assert apd.main(["--text", long_cmd]) == 0                        # the exact-text route still works
+    assert dg.decide("Bash", {"command": long_cmd}) == ("allow", "approved")
+
+
+def test_a_pending_row_whose_stored_text_no_longer_matches_its_own_hash_is_refused(logs, capsys):
+    bad_sha = dg.sha256("rm -rf /the/real/command")
+    (logs / "delete_pending_approvals.jsonl").write_text(
+        json.dumps({"ts": time.time(), "sha": bad_sha, "tool": "Bash", "text": "echo totally different, tampered"}) + "\n", encoding="utf-8")
+    assert apd.main([bad_sha[:10]]) == 1
+    out = capsys.readouterr().out
+    assert "inconsistent" in out
+    assert not (logs / "delete_approvals.jsonl").exists()
+
+
 def test_approving_ahead_of_time_with_the_exact_text(capsys):
     assert apd.main(["--text", "  rm  -rf  /home/user/stuff "]) == 0
     assert dg.decide("Bash", {"command": "rm -rf /home/user/stuff"}) == ("allow", "approved")

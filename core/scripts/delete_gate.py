@@ -127,6 +127,9 @@ def normalize(command):
     return re.sub(r"\s+", " ", str(command).strip())
 
 
+SHOW_LIMIT = 1500   # a pending-by-code approval must never bind more text than the owner was actually shown
+
+
 def command_of(tool_input):
     if isinstance(tool_input, dict):
         return str(tool_input.get("command") or tool_input.get("cmd") or "")
@@ -496,10 +499,17 @@ def decide(tool_name, tool_input):
     if current_mode() == "shadow":
         _append_jsonl("delete_gate_shadow.jsonl", {"ts": EPOCH(), "tool": str(tool_name), "kind": cls["kind"], "why": cls["why"], "text": text[:1000]})
         return "allow", "shadow"
-    _append_jsonl("delete_pending_approvals.jsonl", {"ts": EPOCH(), "sha": sha, "tool": str(tool_name), "kind": cls["kind"], "text": text[:2000]})
-    shown = text if len(text) <= 1500 else text[:1500] + " ..."
+    if len(text) > SHOW_LIMIT:
+        # Too long to show the owner in full, so a short code must never bind an approval to more text than they saw.
+        # No pending row is written for this sha; the only path is --text with the exact command (hashed fresh from
+        # whatever the owner actually supplies, so what is approved can never be longer than what was typed).
+        return "deny", ("Held for the owner's approval (%s: %s).\nThis command is %d characters, too long to hold for a short-code approval. "
+                         "Show the owner the exact full command and have them approve it with the exact text, with the ! prefix:\n"
+                         "python scripts/approve_delete.py --text \"<paste the exact command, in full>\"\n"
+                         "Do not try to work around this." % (cls["kind"], cls["why"], len(text)))
+    _append_jsonl("delete_pending_approvals.jsonl", {"ts": EPOCH(), "sha": sha, "tool": str(tool_name), "kind": cls["kind"], "text": text})
     return "deny", ("Held for the owner's approval (%s: %s).\nExact content:\n%s\n\nShow the owner this exact text and wait. They approve it by typing, with the ! prefix: python scripts/approve_delete.py %s\n"
-                    "Do not try to work around this." % (cls["kind"], cls["why"], shown, sha[:10]))
+                    "Do not try to work around this." % (cls["kind"], cls["why"], text, sha[:10]))
 
 
 def decide_failsafe(tool_name, tool_input):
