@@ -30,7 +30,12 @@ NAMES = {
     "A6": "it learns from feedback",
     "A7": "the machinery is on",
     "A8": "it takes initiative",
+    "A9": "live code has test coverage",
 }
+UNTESTED_LIVE_LIMIT = 0  # a live hook or scheduled script with literally no test file is the cheapest,
+# plainest version of "this could be hiding something" - not a guarantee of correctness by itself
+# (a script can have tests and still ship a real bug), but worth a red, not a silent report nobody
+# has to act on.
 BREAKER_SWITCHES = ("loop_halt.txt", "intents_auto_off.txt")
 REALARM_SEC = 6 * 3600
 
@@ -194,6 +199,15 @@ def evaluate(snap, now):
             out["A8"] = ("green", "reflections are being raised and closed")
         else:
             out["A8"] = ("red", "no reflection closed in the last 26 hours")
+
+    # A9: every live hook or scheduled script has a test file next to it
+    ut = snap.get("untested_live")
+    if ut is None:
+        out["A9"] = ("unmeasured", "could not list live scripts (hygiene_audit.untested_live failed)")
+    elif len(ut) > UNTESTED_LIVE_LIMIT:
+        out["A9"] = ("red", "%d live script(s) with no test file: %s" % (len(ut), ", ".join(ut[:5])))
+    else:
+        out["A9"] = ("green", "every live script has a test file")
     return out
 
 
@@ -305,6 +319,13 @@ def gather(logs=None, now=None):
     # A7: breaker switches
     switches = [s for s in BREAKER_SWITCHES if os.path.exists(os.path.join(logs, s))]
 
+    # A9: untested live scripts
+    try:
+        import hygiene_audit
+        untested_live = hygiene_audit.untested_live()
+    except Exception:
+        untested_live = None
+
     return {
         "intents": intent_store.read_jsonl(intent_store.INTENTS, logs),
         "events": intent_store.read_jsonl(intent_store.EVENTS, logs),
@@ -317,6 +338,7 @@ def gather(logs=None, now=None):
         "learner_age": learner_age,
         "switches": switches,
         "job_runner_age": job_runner_age,
+        "untested_live": untested_live,
     }
 
 

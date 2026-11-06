@@ -928,3 +928,23 @@ class TestReviewFixes:
     def test_a4_lists_every_problem_at_once(self):
         res = harness_health.evaluate({"gate_wired": False, "gate_off": True, "canary": {"ts": 1.0, "ok": False, "detail": "boom"}}, 1000.0)
         assert res["A4"][0] == "red" and all(w in res["A4"][1] for w in ("not in settings.json", "kill switch", "boom"))
+
+
+class TestA9CoverageHolds:
+    """A live hook or scheduled script with literally no test file is the cheapest, plainest
+    version of "this could be hiding something" - ties hygiene_audit.untested_live() into the
+    same alarm pipeline as every other invariant instead of leaving it as a silent report."""
+
+    def test_green_when_every_live_script_has_tests(self):
+        assert harness_health.evaluate({"untested_live": []}, 1000.0)["A9"] == ("green", "every live script has a test file")
+
+    def test_red_when_a_live_script_has_no_tests(self):
+        res = harness_health.evaluate({"untested_live": ["some_hook.py"]}, 1000.0)
+        assert res["A9"][0] == "red" and "some_hook.py" in res["A9"][1]
+
+    def test_unmeasured_when_the_list_could_not_be_built(self):
+        assert harness_health.evaluate({"untested_live": None}, 1000.0)["A9"][0] == "unmeasured"
+
+    def test_message_lists_at_most_five_names(self):
+        many = ["s%d.py" % i for i in range(12)]
+        assert harness_health.evaluate({"untested_live": many}, 1000.0)["A9"][1].count(".py") == 5
