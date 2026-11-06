@@ -36,6 +36,10 @@
           },
           {
             "type": "command",
+            "command": "\"{{python_exe}}\" \"{{root_path}}/scripts/delete_gate.py\""
+          },
+          {
+            "type": "command",
             "command": "\"{{python_exe}}\" \"{{root_path}}/scripts/activity_log_hook.py\"",
             "timeout": 5
           }
